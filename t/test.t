@@ -20,6 +20,7 @@ seven eight nine ten eleven twelve thirteen fourteen/);
 my($page) = Data::Page::Viewport -> new
 (
 	data_size => $#data,
+	old_style => 1,
 	page_size => 4
 );
 

@@ -1,5 +1,10 @@
 Revision history for Perl extension Data::Page::Viewport.
 
+1.02  Mon Feb 21 15:06:00 2005
+	- Add an option to sub new() to allow or disable old/new style scrolling.
+		Read the POD for a full explanation of these styles.
+		Note: The default is new style scrolling, because I feel it is more DWIM
+
 1.01  Mon Feb 14 09:55:00 2005
 	- Change scrolling algorithm in sub offset() to make it DWIM
 	- Add sub current() to return the index of the 'current' item on the current page

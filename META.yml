@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: Data-Page-Viewport
-version: 1.01
+version: 1.02
 author:
   - Ron Savage <ron@savage.net.au>
 abstract: |-
@@ -14,5 +14,5 @@ build_requires:
 provides:
   Data::Page::Viewport:
     file: lib/Data/Page/Viewport.pm
-    version: 1.01
+    version: 1.02
 generated_by: Module::Build version 0.2607

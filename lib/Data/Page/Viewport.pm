@@ -56,7 +56,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = qw(
 
 );
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 
 # -----------------------------------------------
 
@@ -66,6 +66,7 @@ our $VERSION = '1.01';
 	my(%_attr_data) =
 	(	# Alphabetical order.
 		_data_size	=> - 1,
+		_old_style	=> 0,
 		_page_size	=> - 1,
 	);
 
@@ -123,7 +124,7 @@ sub new
 	$$self{'_current'}					= 0;
 	$$self{'_port'}						= {};
 	$$self{'_port'}{'inner'}			= {};
-	$$self{'_port'}{'inner'}{'top'}		= 0; # Top - upwards on screen - and bottom of viewport.
+	$$self{'_port'}{'inner'}{'top'}		= 0; # Top (upwards on screen) and bottom of viewport.
 	$$self{'_port'}{'inner'}{'bottom'}	= $$self{'_page_size'} - 1;
 	$$self{'_port'}{'outer'}			= {};
 	$$self{'_port'}{'outer'}{'top'}		= 0; # Top and bottom of fixed data.
@@ -141,16 +142,18 @@ sub new
 sub offset
 {
     my($self, $offset) = @_;
-	($$self{'_port'}{'inner'}{'top'}, $$self{'_port'}{'inner'}{'bottom'})	= $$self{'_inner'} -> bounds();
+	($$self{'_port'}{'inner'}{'top'}, $$self{'_port'}{'inner'}{'bottom'}) = $$self{'_inner'} -> bounds();
 
 	if ($offset > 0)
 	{
-		$$self{'_current'} += $offset;
+		$$self{'_current'}	+= $offset;
+		$$self{'_current'}	= $$self{'_port'}{'outer'}{'bottom'} if ($$self{'_current'} > $$self{'_port'}{'outer'}{'bottom'});
+		my($permit)			= $$self{'_old_style'} ? 1 : $$self{'_current'} > $$self{'_port'}{'inner'}{'bottom'} ? 1 : 0;
 
 		# If we are scrolling down, and the scroll would leave something visible
 		# within the viewport, then permit the scroll.
 
-		while ( ($offset > 0) && ( ($$self{'_port'}{'inner'}{'top'} + $$self{'_page_size'}) < $$self{'_port'}{'outer'}{'bottom'}) )
+		while ($permit && ($offset > 0) && ( ($$self{'_port'}{'inner'}{'top'} + $$self{'_page_size'}) < $$self{'_port'}{'outer'}{'bottom'}) )
 		{
 			$offset--;
 
@@ -160,12 +163,14 @@ sub offset
 	}
 	elsif ($offset < 0)
 	{
-		$$self{'_current'} += $offset; # + because offset is -!
+		$$self{'_current'}	+= $offset; # + because offset is -!
+		$$self{'_current'}	= $$self{'_port'}{'outer'}{'top'} if ($$self{'_current'} < $$self{'_port'}{'outer'}{'top'});
+		my($permit)			= $$self{'_old_style'} ? 1 : $$self{'_current'} < $$self{'_port'}{'inner'}{'top'} ? 1 : 0;
 
 		# If we are scrolling up, and the scroll would leave something visible
 		# within the viewport, then permit the scroll.
 
-		while ( ($offset < 0) && ( ($$self{'_port'}{'inner'}{'bottom'} - $$self{'_page_size'}) > $$self{'_port'}{'outer'}{'top'}) )
+		while ($permit && ($offset < 0) && ( ($$self{'_port'}{'inner'}{'bottom'} - $$self{'_page_size'}) > $$self{'_port'}{'outer'}{'top'}) )
 		{
 			$offset++;
 
@@ -173,9 +178,6 @@ sub offset
 			($$self{'_port'}{'inner'}{'top'}, $$self{'_port'}{'inner'}{'bottom'}) = $$self{'_inner'} -> bounds();
 		}
 	}
-
-	$$self{'_current'} = $$self{'_port'}{'outer'}{'top'}	if ($$self{'_current'} < $$self{'_port'}{'outer'}{'top'});
-	$$self{'_current'} = $$self{'_port'}{'outer'}{'bottom'}	if ($$self{'_current'} > $$self{'_port'}{'outer'}{'bottom'});
 
 	# Return the viewport, knowing now that when the user calls bounds(),
 	# there will definitely be something visible within the viewport.
@@ -333,6 +335,48 @@ The lower limit is assumed to be 0.
 
 This parameter is mandatory.
 
+=item old_style
+
+This controls whether you get the old style or new style scrolling.
+
+The two types of scrolling are explained next, assuming you have tied the
+up and down arrow keys to scrolling via user input, and assuming you highlight
+the 'current' record. This just makes it easier to explain.
+
+=over 4
+
+=item Old style
+
+The 1st record starts as the 'current' record, and the 1st down arrow causes
+the next record to become the 'current' record. All this is as expected.
+
+However, in old style scrolling, that 1st down arrow key also causes the list
+of items to scroll upwards, so the 'current' record remains at the top of the
+current page.
+
+=item New style
+
+With new style scrolling, which I feel is more natural, the list does not begin
+to scroll upward until the 'current' record, and the highlight, reach the bottom
+of the page.
+
+That is, the 'current' record, and the highlight, move down the page each time the
+down arrow key is hit, but the list of items which are displayed on the current
+page does not change, until the point where a down arrow would select a 'current'
+item not visible on the current page. At that point, the list of items visible on
+the current page begins to scroll up, leaving the 'current' record, and the
+highlight, at the last item on the current page.
+
+=back
+
+The up arrow key does the same thing at the top of the page.
+
+The default is 0, meaning you get the new style scrolling.
+
+Set it to 1 to get the old style scrolling.
+
+This parameter is optional.
+
 =item page_size
 
 This is the number of items on a page.
@@ -414,9 +458,9 @@ C<Data::Page::Viewport> was written by Ron Savage I<E<lt>ron@savage.net.auE<gt>>
 
 Home page: http://savage.net.au/index.html
 
-=head1 Copyright
+=head1 Copybottom
 
-Australian copyright (c) 2004, Ron Savage. All rights reserved.
+Australian copybottom (c) 2004, Ron Savage. All bottoms reserved.
 
 	All Programs of mine are 'OSI Certified Open Source Software';
 	you can redistribute them and/or modify them under the terms of
