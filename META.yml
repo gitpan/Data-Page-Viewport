@@ -1,0 +1,18 @@
+--- #YAML:1.0
+name: Data-Page-Viewport
+version: 1.00
+author:
+  - Ron Savage <ron@savage.net.au>
+abstract: |-
+  Scroll thru data a page, or just an item, at a time
+license: artistic
+requires:
+  Set::Window: 0
+build_requires:
+  Test::More: 0
+  Test::Pod: 0
+provides:
+  Data::Page::Viewport:
+    file: lib/Data/Page/Viewport.pm
+    version: 1.00
+generated_by: Module::Build version 0.2605
