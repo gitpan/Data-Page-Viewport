@@ -56,7 +56,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = qw(
 
 );
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
 # -----------------------------------------------
 
@@ -85,6 +85,16 @@ our $VERSION = '1.00';
 
 # -----------------------------------------------
 
+sub current
+{
+	my($self) = @_;
+
+	$$self{'_current'};
+
+}	# End of current.
+
+# -----------------------------------------------
+
 sub new
 {
 	my($caller, %arg)	= @_;
@@ -110,17 +120,17 @@ sub new
 		}
 	}
 
-	$$self{'_current'}						= {};
-	$$self{'_current'}{'inner'}				= {};
-	$$self{'_current'}{'inner'}{'top'}		= 0;
-	$$self{'_current'}{'inner'}{'bottom'}	= $$self{'_page_size'} - 1;
-	$$self{'_current'}{'outer'}				= {};
-	$$self{'_current'}{'outer'}{'top'}		= 0;
-	$$self{'_current'}{'outer'}{'bottom'}	= $$self{'_data_size'} - 1;
-	$$self{'_original'}						= {};
-	$$self{'_original'}{'inner'}			= $$self{'_current'}{'inner'};
-	$$self{'_inner'}						= Set::Window -> new_lr($$self{'_current'}{'inner'}{'top'}, $$self{'_current'}{'inner'}{'bottom'});
-	$$self{'_outer'}						= Set::Window -> new_lr($$self{'_current'}{'outer'}{'top'}, $$self{'_current'}{'outer'}{'bottom'});
+	$$self{'_current'}					= 0;
+	$$self{'_port'}						= {};
+	$$self{'_port'}{'inner'}			= {};
+	$$self{'_port'}{'inner'}{'top'}		= 0; # Top - upwards on screen - and bottom of viewport.
+	$$self{'_port'}{'inner'}{'bottom'}	= $$self{'_page_size'} - 1;
+	$$self{'_port'}{'outer'}			= {};
+	$$self{'_port'}{'outer'}{'top'}		= 0; # Top and bottom of fixed data.
+	$$self{'_port'}{'outer'}{'bottom'}	= $$self{'_data_size'};
+	$$self{'_inner'}					= Set::Window -> new_lr($$self{'_port'}{'inner'}{'top'}, $$self{'_port'}{'inner'}{'bottom'});
+	$$self{'_outer'}					= Set::Window -> new_lr($$self{'_port'}{'outer'}{'top'}, $$self{'_port'}{'outer'}{'bottom'});
+	$$self{'_page_size'}				= $$self{'_page_size'} - 1;
 
 	$self;
 
@@ -131,32 +141,41 @@ sub new
 sub offset
 {
     my($self, $offset) = @_;
-	($$self{'_current'}{'inner'}{'top'}, $$self{'_current'}{'inner'}{'bottom'})	= $$self{'_inner'} -> bounds();
+	($$self{'_port'}{'inner'}{'top'}, $$self{'_port'}{'inner'}{'bottom'})	= $$self{'_inner'} -> bounds();
 
 	if ($offset > 0)
 	{
+		$$self{'_current'} += $offset;
+
 		# If we are scrolling down, and the scroll would leave something visible
 		# within the viewport, then permit the scroll.
 
-		if ( ($$self{'_current'}{'inner'}{'top'} + $offset) <= $$self{'_current'}{'outer'}{'bottom'})
+		while ( ($offset > 0) && ( ($$self{'_port'}{'inner'}{'top'} + $$self{'_page_size'}) < $$self{'_port'}{'outer'}{'bottom'}) )
 		{
-	 		$$self{'_inner'} = $$self{'_inner'} -> offset($offset);
+			$offset--;
+
+	 		$$self{'_inner'} = $$self{'_inner'} -> offset(1);
+			($$self{'_port'}{'inner'}{'top'}, $$self{'_port'}{'inner'}{'bottom'}) = $$self{'_inner'} -> bounds();
 		}
 	}
 	elsif ($offset < 0)
 	{
+		$$self{'_current'} += $offset; # + because offset is -!
+
 		# If we are scrolling up, and the scroll would leave something visible
 		# within the viewport, then permit the scroll.
-		# Notice that we don't use $$self{'_current'}{'inner'}{'bottom'},
-		# in false symmetry with the above code for $offset > 0,
-		# because that would wrongly allow the viewport size to shrink
-		# after $$self{'_current'}{'inner'}{'top'} reached 0.
 
-		if ( ($$self{'_current'}{'inner'}{'top'} + $offset) >= $$self{'_current'}{'outer'}{'top'})
+		while ( ($offset < 0) && ( ($$self{'_port'}{'inner'}{'bottom'} - $$self{'_page_size'}) > $$self{'_port'}{'outer'}{'top'}) )
 		{
-	 		$$self{'_inner'} = $$self{'_inner'} -> offset($offset);
+			$offset++;
+
+	 		$$self{'_inner'} = $$self{'_inner'} -> offset(- 1);
+			($$self{'_port'}{'inner'}{'top'}, $$self{'_port'}{'inner'}{'bottom'}) = $$self{'_inner'} -> bounds();
 		}
 	}
+
+	$$self{'_current'} = $$self{'_port'}{'outer'}{'top'}	if ($$self{'_current'} < $$self{'_port'}{'outer'}{'top'});
+	$$self{'_current'} = $$self{'_port'}{'outer'}{'bottom'}	if ($$self{'_current'} > $$self{'_port'}{'outer'}{'bottom'});
 
 	# Return the viewport, knowing now that when the user calls bounds(),
 	# there will definitely be something visible within the viewport.
@@ -330,6 +349,23 @@ thru the data a page at a time.
 But, if you want to allow the user to scroll by using the up and down arrow keys,
 then these keys would result in calls like C<sub offset(+ or - 1)>.
 
+=head1 Mathod: current()
+
+The module keeps track of a 'current' item within the current page, and this method
+returns the index of that 'current' item.
+
+The value returned will be in the range 0 .. data_size.
+
+This means that when you hit the down arrow, say, and call C<offset(1)>, and the items on
+the current page do not change because the items at the end of the data set were already
+visible before down arrow was hit, then you can still call C<current()> after each hit of
+the down arrow key, and the value returned will increase (up to data_size), to indicate
+which item, among those in the current window, is the 'current' item.
+
+You could use this to highlight the 'current' item, which would change each time the down
+arrow was hit, even though the current page of items was not changing (because the final
+page of items was already being displayed).
+
 =head1 Required Modules
 
 =over 4
@@ -378,9 +414,9 @@ C<Data::Page::Viewport> was written by Ron Savage I<E<lt>ron@savage.net.auE<gt>>
 
 Home page: http://savage.net.au/index.html
 
-=head1 Copybottom
+=head1 Copyright
 
-Australian copybottom (c) 2004, Ron Savage. All bottoms reserved.
+Australian copyright (c) 2004, Ron Savage. All rights reserved.
 
 	All Programs of mine are 'OSI Certified Open Source Software';
 	you can redistribute them and/or modify them under the terms of

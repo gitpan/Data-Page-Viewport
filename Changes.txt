@@ -1,4 +1,9 @@
 Revision history for Perl extension Data::Page::Viewport.
 
+1.01  Mon Feb 14 09:55:00 2005
+	- Change scrolling algorithm in sub offset() to make it DWIM
+	- Add sub current() to return the index of the 'current' item on the current page
+	- Fix typo: 'bottom' should have been 'right' in some cases
+
 1.00  Thu Dec  2 12:54:45 2004
 	- Original version
