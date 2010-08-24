@@ -1,5 +1,16 @@
 Revision history for Perl extension Data::Page::Viewport.
 
+1.05  Sun Feb 21 12:55:09 2010
+	- Remove text 'All rights reserved' (for Debian licensing).
+	- Remove POD heads 'Required Modules' and 'Changes'.
+
+1.04  Wed Feb 10 14:02:01 2010
+	- MANIFEST.SKIP updated to exclude MYMETA.yml. Add MYMETA.yml.
+
+1.03  Fri Nov 13 13:20:00 2009
+	- Run dos2unix
+	- Rename Changes.txt to CHANGES
+
 1.02  Mon Feb 21 15:06:00 2005
 	- Add an option to sub new() to allow or disable old/new style scrolling.
 		Read the POD for a full explanation of these styles.

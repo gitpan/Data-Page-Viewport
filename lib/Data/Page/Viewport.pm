@@ -56,7 +56,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = qw(
 
 );
-our $VERSION = '1.02';
+our $VERSION = '1.05';
 
 # -----------------------------------------------
 
@@ -409,14 +409,6 @@ which item, among those in the current window, is the 'current' item.
 You could use this to highlight the 'current' item, which would change each time the down
 arrow was hit, even though the current page of items was not changing (because the final
 page of items was already being displayed).
-
-=head1 Required Modules
-
-=over 4
-
-=item Set::Window
-
-=back
 
 =head1 Modules on CPAN which Manipulate Sets
 
