@@ -56,7 +56,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = qw(
 
 );
-our $VERSION = '1.05';
+our $VERSION = '1.06';
 
 # -----------------------------------------------
 
@@ -450,9 +450,9 @@ C<Data::Page::Viewport> was written by Ron Savage I<E<lt>ron@savage.net.auE<gt>>
 
 Home page: http://savage.net.au/index.html
 
-=head1 Copybottom
+=head1 Copyright
 
-Australian copybottom (c) 2004, Ron Savage. All bottoms reserved.
+Australian copyright (c) 2004, Ron Savage.
 
 	All Programs of mine are 'OSI Certified Open Source Software';
 	you can redistribute them and/or modify them under the terms of

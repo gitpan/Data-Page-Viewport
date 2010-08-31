@@ -16,9 +16,9 @@ name: Data-Page-Viewport
 provides:
   Data::Page::Viewport:
     file: lib/Data/Page/Viewport.pm
-    version: 1.05
+    version: 1.06
 requires:
   Set::Window: 0
 resources:
   license: http://www.perlfoundation.org/artistic_license_1_0
-version: 1.05
+version: 1.06

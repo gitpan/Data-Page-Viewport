@@ -1,5 +1,9 @@
 Revision history for Perl extension Data::Page::Viewport.
 
+1.06  Tue Aug 31 17:09:00 2010
+	- Fix copyright text where a global search-and-replace had corrupted copyright
+	  	to copybottom in a few places.
+
 1.05  Sun Feb 21 12:55:09 2010
 	- Remove text 'All rights reserved' (for Debian licensing).
 	- Remove POD heads 'Required Modules' and 'Changes'.
